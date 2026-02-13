@@ -1,94 +1,222 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Smart Phishing Detector</title>
-  <style>
-    body {
-      font-family: Arial;
-      background: #f4f6f9;
-      text-align: center;
-      padding: 40px;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Phishing Risk Analyzer</title>
 
-    .container {
-      background: white;
-      padding: 30px;
-      border-radius: 10px;
-      width: 500px;
-      margin: auto;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
-    }
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-    input {
-      width: 80%;
-      padding: 10px;
-      margin: 10px 0;
-    }
+<style>
 
-    button {
-      padding: 10px 20px;
-      background: #007bff;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  color: white;
+}
 
-    .risk {
-      font-size: 22px;
-      font-weight: bold;
-      margin-top: 20px;
-    }
+.container {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(15px);
+  padding: 40px;
+  border-radius: 20px;
+  width: 520px;
+  text-align: center;
+  box-shadow: 0 0 40px rgba(0,0,0,0.5);
+}
 
-    .safe { color: green; }
-    .danger { color: red; }
+h1 {
+  font-weight: 700;
+  margin-bottom: 5px;
+}
 
-    .features {
-      text-align: left;
-      margin-top: 20px;
-    }
-  </style>
+.subtitle {
+  font-size: 13px;
+  opacity: 0.7;
+  margin-bottom: 25px;
+}
+
+input {
+  width: 100%;
+  padding: 14px;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+  outline: none;
+}
+
+button {
+  margin-top: 15px;
+  padding: 12px 30px;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  background: linear-gradient(to right, #0072ff, #00c6ff);
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  transform: scale(1.05);
+}
+
+.result-card {
+  margin-top: 30px;
+  padding: 25px;
+  border-radius: 15px;
+  background: rgba(255,255,255,0.08);
+  display: none;
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.risk-bar {
+  height: 10px;
+  width: 100%;
+  background: rgba(255,255,255,0.2);
+  border-radius: 10px;
+  margin: 12px 0;
+  overflow: hidden;
+}
+
+.risk-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 10px;
+  transition: width 0.6s ease;
+}
+
+.safe { background: #00ff9d; }
+.medium { background: #ffc107; }
+.high { background: #ff3b3b; }
+
+.status-text {
+  font-size: 20px;
+  font-weight: 600;
+  margin-top: 5px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 6px 15px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.description {
+  margin-top: 20px;
+  font-size: 14px;
+  text-align: left;
+  white-space: pre-line;
+  opacity: 0.95;
+}
+
+.footer {
+  margin-top: 15px;
+  font-size: 11px;
+  opacity: 0.5;
+}
+
+</style>
 </head>
+
 <body>
 
 <div class="container">
-  <h2>AI-Powered Phishing URL Detector</h2>
 
-  <input type="text" id="urlInput" placeholder="Enter URL">
-  <br>
-  <button onclick="analyzeURL()">Analyze</button>
+  <h1>AI Phishing Risk Analyzer</h1>
+  <div class="subtitle">Multi-Layer URL + Content Intelligence</div>
 
-  <div id="output"></div>
+  <input type="text" id="urlInput" placeholder="Enter website URL...">
+  <button onclick="analyzeURL()">Analyze Website</button>
+
+  <div class="result-card" id="resultCard">
+
+    <div id="riskLevelBadge" class="badge"></div>
+
+    <div class="status-text" id="predictionText"></div>
+
+    <div class="risk-bar">
+      <div class="risk-fill" id="riskFill"></div>
+    </div>
+
+    <div id="riskScoreText"></div>
+
+    <div class="description" id="descriptionText"></div>
+
+    <div class="footer">
+      AI Risk Model • URL + Domain + Content Layer
+    </div>
+
+  </div>
+
 </div>
 
 <script>
-async function analyzeURL() {
-  const url = document.getElementById("urlInput").value;
 
-  const response = await fetch("http://localhost:5000/api/analyze", {
+async function analyzeURL() {
+
+  const url = document.getElementById("urlInput").value.trim();
+  const resultCard = document.getElementById("resultCard");
+
+  if (!url) return;
+
+  const response = await fetch("/api/analyze", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json"
+    },
     body: JSON.stringify({ url })
   });
 
   const data = await response.json();
 
-  const riskClass = data.prediction === "Phishing" ? "danger" : "safe";
+  resultCard.style.display = "block";
 
-  document.getElementById("output").innerHTML = `
-    <div class="risk ${riskClass}">
-      ${data.prediction} (Risk Score: ${data.riskScore}%)
-    </div>
+  const predictionText = document.getElementById("predictionText");
+  const riskFill = document.getElementById("riskFill");
+  const riskScoreText = document.getElementById("riskScoreText");
+  const descriptionText = document.getElementById("descriptionText");
+  const badge = document.getElementById("riskLevelBadge");
 
-    <div class="features">
-      <p><b>Feature Analysis:</b></p>
-      <p>URL Length: ${data.features.length}</p>
-      <p>Dot Count: ${data.features.dotCount}</p>
-      <p>Contains IP: ${data.features.hasIP}</p>
-      <p>HTTPS Secure: ${data.features.hasHTTPS}</p>
-      <p>Suspicious Words: ${data.features.suspiciousWord}</p>
-    </div>
-  `;
+  predictionText.innerText = data.verdict;
+  riskScoreText.innerText = "Total Risk Score: " + data.totalRiskScore + "%";
+  descriptionText.innerText = data.description;
+
+  riskFill.style.width = data.totalRiskScore + "%";
+
+  if (data.riskLevel === "Low") {
+    riskFill.className = "risk-fill safe";
+    badge.style.background = "#00ff9d";
+    badge.style.color = "#000";
+  } 
+  else if (data.riskLevel === "Medium") {
+    riskFill.className = "risk-fill medium";
+    badge.style.background = "#ffc107";
+    badge.style.color = "#000";
+  } 
+  else {
+    riskFill.className = "risk-fill high";
+    badge.style.background = "#ff3b3b";
+    badge.style.color = "#fff";
+  }
+
+  badge.innerText = "Risk Level: " + data.riskLevel;
 }
+
 </script>
 
 </body>
