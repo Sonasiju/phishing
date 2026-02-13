@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Smart Phishing Detector</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #f4f6f9;
+      text-align: center;
+      padding: 40px;
+    }
+
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      width: 500px;
+      margin: auto;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+
+    input {
+      width: 80%;
+      padding: 10px;
+      margin: 10px 0;
+    }
+
+    button {
+      padding: 10px 20px;
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .risk {
+      font-size: 22px;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+
+    .safe { color: green; }
+    .danger { color: red; }
+
+    .features {
+      text-align: left;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>AI-Powered Phishing URL Detector</h2>
+
+  <input type="text" id="urlInput" placeholder="Enter URL">
+  <br>
+  <button onclick="analyzeURL()">Analyze</button>
+
+  <div id="output"></div>
+</div>
+
+<script>
+async function analyzeURL() {
+  const url = document.getElementById("urlInput").value;
+
+  const response = await fetch("http://localhost:5000/api/analyze", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url })
+  });
+
+  const data = await response.json();
+
+  const riskClass = data.prediction === "Phishing" ? "danger" : "safe";
+
+  document.getElementById("output").innerHTML = `
+    <div class="risk ${riskClass}">
+      ${data.prediction} (Risk Score: ${data.riskScore}%)
+    </div>
+
+    <div class="features">
+      <p><b>Feature Analysis:</b></p>
+      <p>URL Length: ${data.features.length}</p>
+      <p>Dot Count: ${data.features.dotCount}</p>
+      <p>Contains IP: ${data.features.hasIP}</p>
+      <p>HTTPS Secure: ${data.features.hasHTTPS}</p>
+      <p>Suspicious Words: ${data.features.suspiciousWord}</p>
+    </div>
+  `;
+}
+</script>
+
+</body>
+</html>
