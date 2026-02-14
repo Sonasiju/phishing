@@ -1,0 +1,324 @@
+🛡 PhishGuard AI
+Hybrid AI-Powered Phishing Detection System
+📌 Project Description
+
+PhishGuard AI is a full-stack cybersecurity web application designed to detect phishing websites using a multi-layer threat analysis system.
+
+The system combines:
+
+Lexical URL analysis
+
+Web content inspection
+
+Domain intelligence (RDAP-based age verification)
+
+AI-powered cyber reasoning (LLM analysis)
+
+It produces a structured risk assessment including:
+
+Risk Score (0–100)
+
+Risk Level (Low / Medium / High)
+
+Domain Age
+
+Detection Reasons
+
+AI Cyber Intelligence
+
+Score Breakdown (Lexical / Content / AI)
+
+The project demonstrates the integration of traditional cybersecurity heuristics with modern AI-based threat detection.
+
+🚀 Key Features
+🔍 Multi-Layer Threat Detection
+1️⃣ Lexical URL Analysis
+
+Suspicious keywords detection
+
+IP-based URL detection
+
+Excessive hyphen detection
+
+Long URL detection
+
+Missing HTTPS detection
+
+2️⃣ Content Analysis
+
+Password field detection
+
+Email + password collection detection
+
+POST form detection
+
+External form submission detection
+
+Urgency phrase detection
+
+3️⃣ Domain Intelligence (RDAP)
+
+Fetches domain registration data
+
+Calculates domain age in days
+
+Flags newly registered domains
+
+4️⃣ AI Cyber Intelligence
+
+Uses LLM (Groq – Llama 3)
+
+Analyzes webpage text
+
+Returns structured JSON:
+
+isPhishing
+
+confidence
+
+reasoning
+
+🎨 UI Features
+
+Hacker neon theme
+
+Animated circular risk meter
+
+Scan loading animation
+
+Domain age display
+
+AI reasoning panel
+
+Score breakdown visualization
+
+Scan history (last 50 entries)
+
+Responsive layout
+
+🛠 Tech Stack
+Backend
+
+Node.js
+
+Express.js
+
+Axios
+
+Cheerio (HTML parsing)
+
+Groq SDK (LLM integration)
+
+RDAP API (Domain intelligence)
+
+dotenv (Environment variables)
+
+Frontend
+
+HTML5
+
+CSS3 (Neon cyber theme)
+
+Vanilla JavaScript
+
+Conic-gradient animated risk meter
+
+📂 Project Structure
+phishguard-ai/
+│
+├── server/
+│   ├── server.js
+│   ├── routes/
+│   │   └── analyzeRoutes.js
+│   ├── services/
+│   │   └── urlAnalyzer.js
+│   ├── public/
+│   │   └── index.html
+│   ├── .env
+│   └── package.json
+
+⚙️ Installation Guide
+1️⃣ Clone Repository
+git clone https://github.com/your-username/phishguard-ai.git
+cd phishguard-ai/server
+
+2️⃣ Install Dependencies
+npm install
+
+3️⃣ Create Environment File
+
+Create a .env file inside /server:
+
+GROQ_API_KEY=your_groq_api_key_here
+
+▶️ Run Commands
+
+Start the server:
+
+node server.js
+
+
+Or (recommended):
+
+npm start
+
+
+Open browser:
+
+http://localhost:5000
+
+🏗 Architecture Diagram (Text Representation)
+             ┌────────────────────┐
+             │     Frontend UI     │
+             │  (Neon Dashboard)   │
+             └──────────┬──────────┘
+                        │
+                        ▼
+             ┌────────────────────┐
+             │   Express Server    │
+             │   /api/analyze      │
+             └──────────┬──────────┘
+                        │
+        ┌───────────────┼────────────────┐
+        ▼               ▼                ▼
+  Lexical Engine   Content Analyzer   RDAP Lookup
+        │               │                │
+        └───────────────┼────────────────┘
+                        ▼
+                Groq AI Analysis
+                        │
+                        ▼
+              Risk Scoring Engine
+                        │
+                        ▼
+                Structured JSON Response
+
+📡 API Documentation
+Base URL
+http://localhost:5000
+
+🔎 Analyze URL
+Endpoint
+POST /api/analyze
+
+Request Body
+{
+  "url": "https://example.com"
+}
+
+Response Format
+{
+  "riskScore": 65,
+  "riskLevel": "Medium Risk",
+  "confidence": "Medium",
+  "domainAgeDays": 120,
+  "reasons": [
+    "URL does not use HTTPS",
+    "Form contains password field"
+  ],
+  "aiAnalysis": {
+    "isPhishing": true,
+    "confidence": 85,
+    "reasoning": "The page contains credential harvesting patterns."
+  },
+  "breakdown": {
+    "lexical": 18,
+    "content": 22,
+    "ai": 25
+  }
+}
+
+📜 Scan History
+Endpoint
+GET /api/history
+
+
+Returns last 50 scan results stored in memory.
+
+🔒 Risk Classification Logic
+Score Range	Classification
+0–39	Low Risk
+40–79	Medium Risk
+80–100	High Risk
+🧠 AI Integration Details
+
+Model Used:
+
+llama-3.1-8b-instant
+
+
+Prompt Engineering:
+
+Structured JSON-only response
+
+Low temperature (0.3)
+
+Content limited to first 1200 characters
+
+🏆 Use Cases
+
+Cybersecurity awareness tools
+
+Hackathon submission
+
+Academic mini project
+
+Resume project
+
+Browser extension backend prototype
+
+SOC automation prototype
+
+🔮 Future Improvements
+
+SSL certificate validation
+
+DNS validation
+
+Threat intelligence API integration
+
+IP reputation checking
+
+Database logging
+
+JWT authentication
+
+Browser extension version
+
+ML training dataset collection
+
+📄 License
+
+MIT License
+
+You are free to:
+
+Use
+
+Modify
+
+Distribute
+
+Publish
+
+With attribution.
+
+👩‍💻 Author
+
+Sona Siju
+B.Tech Information Technology
+Cybersecurity & AI Enthusiast
+
+If you want next, I can give you:
+
+🔥 Resume bullet points
+
+🎯 Hackathon presentation pitch script
+
+🧠 Viva explanation notes
+
+📊 PowerPoint content
+
+📄 Research-paper style documentation
+
+Tell me what you want now.
