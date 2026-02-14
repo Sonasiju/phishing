@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PhishGuard AI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Courier New', monospace;
+      background: black;
+      color: #00ffcc;
+      overflow-x: hidden;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: -2;
+    }
+
+    /* DARK OVERLAY FOR READABILITY */
+    .overlay {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.75);
+      z-index: -1;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 35px;
+      border-radius: 20px;
+      border: 1px solid #00ffcc;
+      background: rgba(0, 255, 204, 0.05);
+      box-shadow: 0 0 30px rgba(0,255,204,0.3);
+      backdrop-filter: blur(6px);
+      animation: fadeIn 1s ease-in;
+    }
+
+    h2 {
+      text-align: center;
+      font-size: 30px;
+      text-shadow: 0 0 12px #00ffcc;
+      margin-bottom: 25px;
+    }
+
+    input {
+      width: 70%;
+      padding: 12px;
+      border-radius: 6px;
+      border: 1px solid #00ffcc;
+      background: black;
+      color: #00ffcc;
+      font-size: 14px;
+    }
+
+    button {
+      padding: 10px 18px;
+      margin: 10px;
+      border-radius: 6px;
+      border: 1px solid #00ffcc;
+      background: black;
+      color: #00ffcc;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #00ffcc;
+      color: black;
+      box-shadow: 0 0 15px #00ffcc;
+      transform: scale(1.05);
+    }
+
+    .scan-status {
+      margin-top: 15px;
+      font-size: 14px;
+      min-height: 20px;
+      color: #00ffcc;
+    }
+
+    .meter {
+      margin: 30px auto;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: bold;
+      border: 3px solid #00ffcc;
+      box-shadow: 0 0 25px #00ffcc inset;
+      transition: 0.5s;
+    }
+
+    .card {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 12px;
+      border: 1px solid #00ffcc;
+      background: rgba(0,255,204,0.07);
+      box-shadow: 0 0 15px rgba(0,255,204,0.2);
+    }
+
+    .badge {
+      padding: 6px 14px;
+      border-radius: 20px;
+      display: inline-block;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+
+    .high {
+      border: 1px solid red;
+      color: red;
+      box-shadow: 0 0 15px red;
+      animation: pulse 1s infinite;
+    }
+
+    .medium {
+      border: 1px solid yellow;
+      color: yellow;
+      box-shadow: 0 0 10px yellow;
+    }
+
+    .low {
+      border: 1px solid #00ffcc;
+      color: #00ffcc;
+    }
+
+    ul {
+      text-align: left;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+
+    #aiSection {
+      margin-top: 10px;
+      font-size: 13px;
+    }
+
+    #breakdownSection {
+      margin-top: 10px;
+      font-size: 13px;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 10px red; }
+      50% { box-shadow: 0 0 30px red; }
+      100% { box-shadow: 0 0 10px red; }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+  </style>
+</head>
+
+<body>
+
+<canvas id="matrix"></canvas>
+<div class="overlay"></div>
+
+<div class="container">
+
+  <h2>🛡 PHISHGUARD AI </h2>
+
+  <input type="text" id="urlInput" placeholder="Enter Target URL">
+  <br>
+  <button onclick="analyze()">INITIATE SCAN</button>
+
+  <div class="scan-status" id="scanStatus"></div>
+
+  <div class="meter" id="riskMeter">0%</div>
+
+  <div id="badgeArea"></div>
+  <div id="domainAgeText"></div>
+
+  <div class="card">
+    <strong>⚠ Detection Reasons</strong>
+    <ul id="reasons"></ul>
+  </div>
+
+  <div class="card">
+    <div id="aiSection"></div>
+  </div>
+
+  <div class="card">
+    <div id="breakdownSection"></div>
+  </div>
+
+</div>
+
+<script>
+
+/* MATRIX BACKGROUND */
+const canvas = document.getElementById("matrix");
+const ctx = canvas.getContext("2d");
+canvas.height = window.innerHeight;
+canvas.width = window.innerWidth;
+
+const letters = "01";
+const fontSize = 14;
+const columns = canvas.width / fontSize;
+const drops = [];
+for (let x = 0; x < columns; x++) drops[x] = 1;
+
+function draw() {
+  ctx.fillStyle = "rgba(0,0,0,0.08)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "#00ffcc";
+  ctx.font = fontSize + "px monospace";
+  for (let i = 0; i < drops.length; i++) {
+    const text = letters[Math.floor(Math.random() * letters.length)];
+    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975)
+      drops[i] = 0;
+    drops[i]++;
+  }
+}
+setInterval(draw, 33);
+
+/* ANALYZE FUNCTION */
+async function analyze() {
+
+  const url = document.getElementById("urlInput").value;
+  const scanStatus = document.getElementById("scanStatus");
+
+  scanStatus.innerText = "Scanning target...";
+  const response = await fetch("/api/analyze", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url })
+  });
+
+  const data = await response.json();
+  scanStatus.innerText = "Scan completed.";
+
+  const meter = document.getElementById("riskMeter");
+  const badgeArea = document.getElementById("badgeArea");
+  const domainAgeText = document.getElementById("domainAgeText");
+  const reasons = document.getElementById("reasons");
+  const aiSection = document.getElementById("aiSection");
+  const breakdown = document.getElementById("breakdownSection");
+
+  let score = data.riskScore;
+  let color = score >= 70 ? "red" :
+              score >= 40 ? "yellow" :
+              "#00ffcc";
+
+  meter.style.background =
+    `conic-gradient(${color} ${score * 3.6}deg, #001a12 0deg)`;
+  meter.innerText = score + "%";
+
+  let badgeClass = data.riskLevel.includes("High") ? "high" :
+                   data.riskLevel.includes("Medium") ? "medium" : "low";
+
+  badgeArea.innerHTML =
+    `<div class="badge ${badgeClass}">
+      ${data.riskLevel} | Confidence: ${data.confidence}
+    </div>`;
+
+  domainAgeText.innerText =
+    "Domain Age: " +
+    (data.domainAgeDays ? data.domainAgeDays + " days" : "Unavailable");
+
+  reasons.innerHTML = "";
+  data.reasons.forEach(r => {
+    const li = document.createElement("li");
+    li.innerText = r;
+    reasons.appendChild(li);
+  });
+
+  if (data.aiAnalysis) {
+    aiSection.innerHTML =
+      "<strong>🤖 AI Cyber Intelligence</strong><br>" +
+      data.aiAnalysis.reasoning +
+      "<br>Confidence: " + (Math.round(data.aiAnalysis.confidence * 100)) + "%"
+;
+  }
+s
+  breakdown.innerHTML =
+    "<strong>Scan Breakdown</strong><br>" +
+    "Lexical: " + data.breakdown.lexical +
+    " | Content: " + data.breakdown.content +
+    " | AI: " + data.breakdown.ai;
+}
+
+</script>
+
+</body>
+</html>
