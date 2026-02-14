@@ -98,10 +98,11 @@ async function analyzeUrl(url) {
   // -------------------------
 
   if (!url.startsWith("https://")) {
-    score += 8;
-    lexicalScore += 8;
-    reasons.push("URL does not use HTTPS");
-  }
+  score += 12;   // stronger penalty
+  lexicalScore += 12;
+  reasons.push("URL does not use HTTPS");
+}
+
 
   if (url.length > 75) {
     score += 8;
@@ -117,17 +118,27 @@ async function analyzeUrl(url) {
   }
 
   const suspiciousKeywords = [
-    "login", "verify", "secure",
-    "update", "account", "bank"
-  ];
+  "login", "verify", "secure",
+  "update", "account", "bank"
+];
 
-  suspiciousKeywords.forEach(word => {
-    if (fullUrl.includes(word)) {
-      score += 6;
-      lexicalScore += 6;
-      reasons.push(`URL contains suspicious keyword "${word}"`);
-    }
-  });
+let keywordCount = 0;
+
+suspiciousKeywords.forEach(word => {
+  if (fullUrl.includes(word)) {
+    score += 10;              // increased from 6 → 10
+    lexicalScore += 10;
+    keywordCount++;
+    reasons.push(`URL contains suspicious keyword "${word}"`);
+  }
+});
+
+// 🔥 Bonus: If multiple phishing keywords exist
+if (keywordCount >= 3) {
+  score += 20;
+  lexicalScore += 20;
+  reasons.push("Multiple phishing keywords detected");
+}
 
   const hyphenCount = (hostname.match(/-/g) || []).length;
   if (hyphenCount >= 3) {

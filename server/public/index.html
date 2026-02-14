@@ -20,7 +20,6 @@
       z-index: -2;
     }
 
-    /* DARK OVERLAY FOR READABILITY */
     .overlay {
       position: fixed;
       width: 100%;
@@ -38,7 +37,6 @@
       background: rgba(0, 255, 204, 0.05);
       box-shadow: 0 0 30px rgba(0,255,204,0.3);
       backdrop-filter: blur(6px);
-      animation: fadeIn 1s ease-in;
     }
 
     h2 {
@@ -80,22 +78,20 @@
       margin-top: 15px;
       font-size: 14px;
       min-height: 20px;
-      color: #00ffcc;
     }
 
     .meter {
       margin: 30px auto;
-      width: 200px;
-      height: 200px;
+      width: 220px;
+      height: 220px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 32px;
+      font-size: 36px;
       font-weight: bold;
-      border: 3px solid #00ffcc;
-      box-shadow: 0 0 25px #00ffcc inset;
-      transition: 0.5s;
+      border: 4px solid #00ffcc;
+      transition: all 0.6s ease;
     }
 
     .card {
@@ -104,7 +100,6 @@
       border-radius: 12px;
       border: 1px solid #00ffcc;
       background: rgba(0,255,204,0.07);
-      box-shadow: 0 0 15px rgba(0,255,204,0.2);
     }
 
     .badge {
@@ -113,52 +108,12 @@
       display: inline-block;
       margin-top: 10px;
       font-size: 13px;
+      font-weight: bold;
     }
 
-    .high {
-      border: 1px solid red;
-      color: red;
-      box-shadow: 0 0 15px red;
-      animation: pulse 1s infinite;
-    }
-
-    .medium {
-      border: 1px solid yellow;
-      color: yellow;
-      box-shadow: 0 0 10px yellow;
-    }
-
-    .low {
-      border: 1px solid #00ffcc;
-      color: #00ffcc;
-    }
-
-    ul {
-      text-align: left;
-      margin-top: 10px;
-      font-size: 13px;
-    }
-
-    #aiSection {
-      margin-top: 10px;
-      font-size: 13px;
-    }
-
-    #breakdownSection {
-      margin-top: 10px;
-      font-size: 13px;
-    }
-
-    @keyframes pulse {
-      0% { box-shadow: 0 0 10px red; }
-      50% { box-shadow: 0 0 30px red; }
-      100% { box-shadow: 0 0 10px red; }
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(15px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    .high { color: #ff0033; }
+    .medium { color: #ffcc00; }
+    .low { color: #00ffcc; }
 
   </style>
 </head>
@@ -170,7 +125,7 @@
 
 <div class="container">
 
-  <h2>🛡 PHISHGUARD AI </h2>
+  <h2>🛡 PHISHGUARD AI</h2>
 
   <input type="text" id="urlInput" placeholder="Enter Target URL">
   <br>
@@ -200,97 +155,97 @@
 
 <script>
 
-/* MATRIX BACKGROUND */
-const canvas = document.getElementById("matrix");
-const ctx = canvas.getContext("2d");
-canvas.height = window.innerHeight;
-canvas.width = window.innerWidth;
-
-const letters = "01";
-const fontSize = 14;
-const columns = canvas.width / fontSize;
-const drops = [];
-for (let x = 0; x < columns; x++) drops[x] = 1;
-
-function draw() {
-  ctx.fillStyle = "rgba(0,0,0,0.08)";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = "#00ffcc";
-  ctx.font = fontSize + "px monospace";
-  for (let i = 0; i < drops.length; i++) {
-    const text = letters[Math.floor(Math.random() * letters.length)];
-    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975)
-      drops[i] = 0;
-    drops[i]++;
-  }
-}
-setInterval(draw, 33);
-
-/* ANALYZE FUNCTION */
 async function analyze() {
 
-  const url = document.getElementById("urlInput").value;
+  const url = document.getElementById("urlInput").value.trim();
+  if (!url) return;
+
   const scanStatus = document.getElementById("scanStatus");
-
   scanStatus.innerText = "Scanning target...";
-  const response = await fetch("/api/analyze", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ url })
-  });
 
-  const data = await response.json();
-  scanStatus.innerText = "Scan completed.";
+  try {
 
-  const meter = document.getElementById("riskMeter");
-  const badgeArea = document.getElementById("badgeArea");
-  const domainAgeText = document.getElementById("domainAgeText");
-  const reasons = document.getElementById("reasons");
-  const aiSection = document.getElementById("aiSection");
-  const breakdown = document.getElementById("breakdownSection");
+    const response = await fetch("/api/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url })
+    });
 
-  let score = data.riskScore;
-  let color = score >= 70 ? "red" :
-              score >= 40 ? "yellow" :
-              "#00ffcc";
+    const data = await response.json();
+    scanStatus.innerText = "Scan completed.";
 
-  meter.style.background =
-    `conic-gradient(${color} ${score * 3.6}deg, #001a12 0deg)`;
-  meter.innerText = score + "%";
+    const meter = document.getElementById("riskMeter");
+    const badgeArea = document.getElementById("badgeArea");
+    const domainAgeText = document.getElementById("domainAgeText");
+    const reasons = document.getElementById("reasons");
+    const aiSection = document.getElementById("aiSection");
+    const breakdown = document.getElementById("breakdownSection");
 
-  let badgeClass = data.riskLevel.includes("High") ? "high" :
-                   data.riskLevel.includes("Medium") ? "medium" : "low";
+    let score = data?.riskScore ?? 0;
 
-  badgeArea.innerHTML =
-    `<div class="badge ${badgeClass}">
-      ${data.riskLevel} | Confidence: ${data.confidence}
-    </div>`;
+    let color, glow;
 
-  domainAgeText.innerText =
-    "Domain Age: " +
-    (data.domainAgeDays ? data.domainAgeDays + " days" : "Unavailable");
+    if (score >= 70) {
+      color = "#ff0033";
+      glow = "0 0 35px #ff0033";
+    } 
+    else if (score >= 40) {
+      color = "#ffcc00";
+      glow = "0 0 35px #ffcc00";
+    } 
+    else {
+      color = "#00ffcc";
+      glow = "0 0 35px #00ffcc";
+    }
 
-  reasons.innerHTML = "";
-  data.reasons.forEach(r => {
-    const li = document.createElement("li");
-    li.innerText = r;
-    reasons.appendChild(li);
-  });
+    meter.style.background =
+      `conic-gradient(${color} ${score * 3.6}deg, #001a12 0deg)`;
 
-  if (data.aiAnalysis) {
-    aiSection.innerHTML =
-      "<strong>🤖 AI Cyber Intelligence</strong><br>" +
-      data.aiAnalysis.reasoning +
-      "<br>Confidence: " + (Math.round(data.aiAnalysis.confidence * 100)) + "%"
-;
+    meter.style.borderColor = color;
+    meter.style.boxShadow = glow;
+    meter.style.color = color;
+    meter.innerText = score + "%";
+
+    let badgeClass =
+      data.riskLevel?.includes("High") ? "high" :
+      data.riskLevel?.includes("Medium") ? "medium" : "low";
+
+    badgeArea.innerHTML =
+      `<div class="badge ${badgeClass}">
+        ${data.riskLevel || "Unknown"} | Confidence: ${data.confidence || "-"}
+      </div>`;
+
+    domainAgeText.innerText =
+      "Domain Age: " +
+      (data.domainAgeDays ? data.domainAgeDays + " days" : "Unavailable");
+
+    reasons.innerHTML = "";
+    (data.reasons || []).forEach(r => {
+      const li = document.createElement("li");
+      li.innerText = r;
+      reasons.appendChild(li);
+    });
+
+    if (data.aiAnalysis) {
+      aiSection.innerHTML =
+        "<strong>🤖 AI Cyber Intelligence</strong><br>" +
+        data.aiAnalysis.reasoning +
+        "<br>Confidence: " +
+        Math.round(data.aiAnalysis.confidence * 100) + "%";
+    } else {
+      aiSection.innerHTML = "";
+    }
+
+    breakdown.innerHTML =
+      "<strong>Scan Breakdown</strong><br>" +
+      "Lexical: " + (data.breakdown?.lexical ?? 0) +
+      " | Content: " + (data.breakdown?.content ?? 0) +
+      " | AI: " + (data.breakdown?.ai ?? 0);
+
+  } catch (err) {
+    scanStatus.innerText = "Error scanning URL.";
+    console.error(err);
   }
-
-  breakdown.innerHTML =
-    "<strong>Scan Breakdown</strong><br>" +
-    "Lexical: " + data.breakdown.lexical +
-    " | Content: " + data.breakdown.content +
-    " | AI: " + data.breakdown.ai;
 }
 
 </script>
